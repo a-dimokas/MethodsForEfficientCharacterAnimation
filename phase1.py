@@ -145,7 +145,7 @@ bpy.data.scenes["Scene"].frame_current = 0
 
 #################################################################     
 #vertex groups are inside lola object (obj)
-obj = bpy.data.meshes['Lola']
+obj = bpy.data.meshes[meshName]
 curr_obj = bpy.data.objects[meshName]
 bpy.context.view_layer.objects.active = curr_obj
 bpy.ops.object.mode_set(mode='WEIGHT_PAINT')  
