@@ -1,14 +1,15 @@
-outputName = 'Lola2'
-maxFrames = 137-1
-maxBones = 4
-objName = 'Armature'
-fileName = 'Lola'
+outputName = None
+maxFrames = None
+maxBones = None
+objName = None
+fileName = None
 
 #the blender home directory is needed for the project (eg: C:\\Users\\----\\Blender)
 blenderHomeDir = ""
 
+#verts debug for all verts (-1,-1)
 vertsDebug = [1804,1862]
-ftol = "5e-06"
+ftol = None
 
 def getVertexGroups():
     weightFile = open(blenderHomeDir+"\\weights\\"+fileName+"\\weights.txt")

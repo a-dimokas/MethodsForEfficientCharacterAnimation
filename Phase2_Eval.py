@@ -1,7 +1,7 @@
 import bpy
 import numpy as np
 #modify this number to any vertex number
-vertNum = 1761
+vertNum = None
 
 #the blender home directory is needed for the project (eg: C:\\Users\\----\\Blender)
 blenderHomeDir = ""

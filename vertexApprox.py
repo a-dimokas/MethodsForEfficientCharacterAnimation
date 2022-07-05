@@ -1,16 +1,17 @@
 import numpy as np
 
-maxFrames = 137
-maxBones = 4
-objName = 'Lola'
-fileName = 'Lola'
-outputName = 'Lola2'
+maxFrames = None
+maxBones = None
+objName = None
+fileName = None
+outputName = None
 
 #the blender home directory is needed for the project (eg: C:\\Users\\----\\Blender)
 blenderHomeDir = ""
 
-vertsDebug = [1804,1862]
-#vertsDebug = [-1,-1]
+#which verts to approx (-1,-1 for all Verts)
+# vertsDebug = [1804,1862]
+vertsDebug = [-1,-1]
 
 #get restPose vertices
 restVerts = open(blenderHomeDir+"\\restPoseVerts\\"+fileName+"\\verts.txt")

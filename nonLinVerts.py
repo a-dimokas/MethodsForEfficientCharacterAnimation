@@ -3,11 +3,11 @@ import numpy as np
 #the blender home directory is needed for the project (eg: C:\\Users\\----\\Blender)
 blenderHomeDir = ""
 
-outputName = 'Lola2'
-maxFrames = 137-1
-maxBones = 4
-objName = 'Lola'
-fileName = 'Lola'
+outputName = None
+maxFrames = None
+maxBones = None
+objName = None
+fileName = None
 
 vertsDebug = [1804,1862]
 

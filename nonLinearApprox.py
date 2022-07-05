@@ -7,14 +7,21 @@ from math import dist
 #the blender home directory is needed for the project (eg: C:\\Users\\----\\Blender)
 blenderHomeDir = ""
 
-outputName = 'Lola2'
-maxFrames = 137
-maxBones = 4
-objName = 'Armature'
-fileName = 'Lola'
+outputName = None
+maxFrames = None
+maxBones = None
+objName = None
+fileName = None
 
+#(-1,-1) for all verts
 vertsDebug = [1804,1862]
-reloadOutput = "0.0001"
+
+#if we want to continue operations from a previous output result, this variable is for the ftol used in the previous resutls
+reloadOutput = None
+
+#specify ftol and maxIterations for the lbfgs method
+ftol = None
+maxiter = None
 
 #fills empty array with global vertData of frame
 def getVerts(realVertData, frame):
@@ -175,10 +182,10 @@ def vertApprox(x,p,vv,wInd):
         restVertData[vv])
         return sum
    
-ftol = 5e-6
+
 print("from iter 30, " + fileName + str(vertsDebug) + str(ftol))
 
-result = minimize(f, initList, options={'disp':True, 'maxfun':2000000, 'maxiter':100, 'ftol':ftol}, method="L-BFGS-B", jac=None)
+result = minimize(f, initList, options={'disp':True, 'maxfun':2000000, 'maxiter':maxiter, 'ftol':ftol}, method="L-BFGS-B", jac=None)
 
 #slsqp non linear optimization
 with open(blenderHomeDir+"\\nonLinApprox\\"+outputName+"\\output"+str(ftol)+".txt", "w") as fileOutput:

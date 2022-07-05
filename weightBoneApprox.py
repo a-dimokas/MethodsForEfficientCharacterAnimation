@@ -3,19 +3,21 @@ from scipy.optimize import nnls
 from scipy.linalg import lstsq
 import bpy
 import math
+import copy
 
 #declare object name to save appropiatelly
-maxFrames = 137
-maxBones = 4
-objName = 'Armature'
-fileName = 'Lola'
-outputName = 'Lola2'
+maxFrames = None
+maxBones = None
+objName = None
+fileName = None
+outputName = None
 
 #the blender home directory is needed for the project (eg: C:\\Users\\----\\Blender)
 blenderHomeDir = ""
 
-vertsDebug = [1804,1862]
-#vertsDebug = [-1,-1]
+#which verts to be calculate weights and bones for (-1,-1 for all)
+# vertsDebug = [1804,1862]
+vertsDebug = [-1,-1]
 
 
 #fills empty array with global vertData of frame
@@ -177,7 +179,7 @@ def fitWeights(boneMat, vertexGroups):
     vv = 0
     actualVV = 0
     if(vertsDebug[0]>0):
-        actualVV = vertsDebug[0]
+        actualVV = vertsDebug[0]+1
     for v in restVertData:
         AA = np.zeros(((3*(maxFrames-1))+1 , maxBones), float)
         bb = []
@@ -203,12 +205,6 @@ def fitWeights(boneMat, vertexGroups):
             if(i<len(vertexGroups[vv])):
                 AA[len(AA)-1][i] = 1.
         tmpWeights = nnls(AA,bb)[0]
-        for i in range(len(tmpWeights)):
-            if (i<len(vertexGroups[vv]) and tmpWeights[i]==0):
-                tmpWeights[i] = 0.1
-        sumTmp = sum(tmpWeights)
-        for i in range(len(tmpWeights)):
-            tmpWeights[i] = tmpWeights[i]/sumTmp
         newWeights.append(tmpWeights)  
         vv += 1 
         actualVV += 1 
@@ -217,14 +213,14 @@ def fitWeights(boneMat, vertexGroups):
     
     
 def printResults(weightList, boneMats, mode, vertexGroups):
-    normalWeightList = weightList.copy()
-    for i in range(len(normalWeightList)):
-        sumWi = sum(normalWeightList[i])
-        for j in range(len(normalWeightList[i])):
-            normalWeightList[i][j] = normalWeightList[i][j] / sumWi
-            if(np.isnan(normalWeightList[i][j])):
-                print(normalWeightList[i])
-                print(i, mode)
+    for i in range(len(weightList)):
+        sumWi = sum(weightList[i])
+        if(np.isnan(weightList[i][0])):
+            print(i,mode)
+            weightList[i][0] = 1.
+        else:
+            for j in range(len(weightList[i])):
+                weightList[i][j] = weightList[i][j] / sumWi
     with open(blenderHomeDir+"\\approxWeights\\"+outputName+"\\"+mode+"\\approxVertWeights.txt", "w") as weightOutput:
         vv = 0
         for line in normalWeightList:
@@ -246,15 +242,37 @@ def printResults(weightList, boneMats, mode, vertexGroups):
                     
 def correctBones():
     boneMatrs = []
+    restBones = []
+    #get rest bones first
+    file = open(blenderHomeDir+"\\bones\\"+fileName+"\\restBones.txt")
+    all_lines = file.readlines()
+    for i in bones:
+        tmpRest = np.zeros(shape=(4,4))
+        for j in range(4):
+            tmpLine = []
+            for elem in getBoneData(j,all_lines[(i*5) + j]):
+                tmpLine.append(elem)
+            tmpRest[j] = tmpLine
+        restBones.append(tmpRest)
+    file.close()
     for frame in range(1,maxFrames):
         boneMatrs.append([])
         file = open(blenderHomeDir+"\\bones\\"+fileName+"\\bone"+str(frame)+".txt")
         all_lines = file.readlines()
         for i in bones:
-            for j in range(3):
-                #get data from file and add it to the matrix
+            tmpBone = np.zeros(shape=(4,4))
+            for j in range(4):
+                tmpLine = []
                 for elem in getBoneData(j,all_lines[(i*5) + j]):
-                    boneMatrs[frame-1].append(elem)
+                    tmpLine.append(elem)
+                tmpBone[j] = tmpLine
+            #now we multiply rest and actual bone transf
+            tmpResult = tmpBone @ restBones[bones.index(i)]
+            for k in range(3):
+                boneMatrs[frame-1].append(tmpResult[k,0])
+                boneMatrs[frame-1].append(tmpResult[k,2] * (-1))
+                boneMatrs[frame-1].append(tmpResult[k,1])
+                boneMatrs[frame-1].append(tmpResult[k,3])
         file.close()
     return boneMatrs
     
@@ -300,29 +318,29 @@ for i in range(iters[len(iters)-1]):
     weights = fitWeights(bonesMats, vertexGroups)
     if(i+1 in iters):
         mode = mode1[iters.index(i+1)]
-        printResults(weights, bonesMats, mode, vertexGroups)
+        printResults(copy.deepcopy(weights), bonesMats, mode, vertexGroups)
 
-#print('init2 ' + fileName)
-##init2
-#mode2 = ['It3_init2','It5_init2','It8_init2','It10_init2','It12_init2']
-#weights, vertexGroups = randomWeights()
-#bonesMats = correctBones()
-#weights = fitWeights(bonesMats, vertexGroups)
-#for i in range(iters[len(iters)-1]):
-#    bonesMats = fitBones(weights, vertexGroups)
-#    weights = fitWeights(bonesMats, vertexGroups)
-#    if(i+1 in iters):
-#        mode = mode2[iters.index(i+1)]
-#        printResults(weights, bonesMats, mode, vertexGroups)
+print('init2 ' + fileName)
+#init2
+mode2 = ['It3_init2','It5_init2','It8_init2','It10_init2','It12_init2']
+weights, vertexGroups = randomWeights()
+bonesMats = correctBones()
+weights = fitWeights(bonesMats, vertexGroups)
+for i in range(iters[len(iters)-1]):
+   bonesMats = fitBones(weights, vertexGroups)
+   weights = fitWeights(bonesMats, vertexGroups)
+   if(i+1 in iters):
+       mode = mode2[iters.index(i+1)]
+       printResults(copy.deepcopy(weights), bonesMats, mode, vertexGroups)
 
-#print('init3 ' + fileName)
-##init3
-#mode3 = ['It3_init3','It5_init3','It8_init3','It10_init3','It12_init3']
-#weights, vertexGroups = correctWeights()
-#for i in range(iters[len(iters)-1]):
-#    bonesMats = fitBones(weights, vertexGroups)
-#    weights = fitWeights(bonesMats, vertexGroups)
-#    if(i+1 in iters):
-#        mode = mode3[iters.index(i+1)]
-#        printResults(weights, bonesMats, mode, vertexGroups)
+print('init3 ' + fileName)
+#init3
+mode3 = ['It3_init3','It5_init3','It8_init3','It10_init3','It12_init3']
+weights, vertexGroups = correctWeights()
+for i in range(iters[len(iters)-1]):
+   bonesMats = fitBones(weights, vertexGroups)
+   weights = fitWeights(bonesMats, vertexGroups)
+   if(i+1 in iters):
+       mode = mode3[iters.index(i+1)]
+       printResults(copy.deepcopy(weights), bonesMats, mode, vertexGroups)
 

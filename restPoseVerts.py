@@ -1,9 +1,9 @@
 #script to get the rest pose vertices and save them on txt
 
-objName = 'Armature'
-meshName = "Tops"
-fileobjName = 'Maria'
-frame_last = 78
+objName = None
+meshName = None
+fileobjName = None
+frame_last = None
 
 #the blender home directory is needed for the project (eg: C:\\Users\\----\\Blender)
 blenderHomeDir = ""

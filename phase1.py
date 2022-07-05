@@ -3,10 +3,10 @@ import bmesh
 import numpy as np
 
 #declare object name and variables
-objName = 'Armature'
-meshName = "Lola"
-fileName = 'Lola'
-frame_last = 137
+objName = None
+meshName = None
+fileName = None
+frame_last = None
 
 #the blender home directory is needed for the project (eg: C:\\Users\\----\\Blender)
 blenderHomeDir = ""
@@ -152,22 +152,28 @@ bpy.ops.object.mode_set(mode='WEIGHT_PAINT')
 
 vlist = []
 wlist = []
-      
 
-#the total number of vertex groups of the object, the indices are from 
-# 0 to vg_indices-1
-vg_indices = len(bpy.context.object.vertex_groups)
+
+vg_indices = []
+boneNames = []
+for i in arma.data.bones:
+    boneNames.append(i.name)
+
+for i in curr_obj.vertex_groups:
+    if(i.name in boneNames):
+        vg_indices.append(boneNames.index(i.name))
+        
 
 #initialize arrays for vertices groups and coressponding weights  
 for v in obj.vertices:
     vlist.append([])
     wlist.append([])
 
-vg_index = 0
-
-while vg_index != vg_indices:
+#vg_index = 0
+for vg_index in vg_indices:
+#while vg_index != vg_indices:
     #find vertices that belong to vg_index vertex group 
-    vs = [ v for v in obj.vertices if vg_index in [ vg.group for vg in v.groups ] ]
+    vs = [ v for v in obj.vertices if vg_indices.index(vg_index) in [ vg.group for vg in v.groups ] ]
     
     #fill the arrays 
     for i in vs:
@@ -176,17 +182,17 @@ while vg_index != vg_indices:
         
     
     #iterate to the next vertex group    
-    vg_index += 1
+#    vg_index += 1
     
 for i in range(len(wlist)):
     sumW = sum(wlist[i])
     for j in range(len(wlist[i])):
         wlist[i][j] = wlist[i][j] / sumW
     
-
-weightFile = open(blenderHomeDir + "\\weights\\"+fileName+"\\weights.txt", "w")
+weightFile = open("C:\\Users\\30693\\sxoli\\diploma\\Blender\\weights\\"+fileName+"\\weights.txt", "w+")
 for i in range(len(vlist)):
     weightFile.write(str(vlist[i]) + ", " + str(wlist[i]) + '\n')
     
-
+weightFile.close()
+    
 bpy.ops.object.mode_set(mode='OBJECT')

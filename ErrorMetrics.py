@@ -6,19 +6,20 @@ import math
 #the blender home directory is needed for the project (eg: C:\\Users\\----\\Blender)
 blenderHomeDir = ""
 
-frame_last = 137-1
-maxBones = 4
-objName = 'Lola'
-fileName = 'Lola'
-outputName = 'Lola2'
+frame_last =None
+maxBones = None
+objName = None
+fileName = None
+outputName = None
 
-vertsDebug = [1804,1862]
-#vertsDebug = [-1,-1]
+#(-1,-1) for all verts
+# vertsDebug = [1804,1862]
+vertsDebug = [-1,-1]
 
 #swithc to linear or non linear
 nonLin = True
-ftol = "5e-6"
-iter = "130"
+ftol = None
+iter = None
 
 modeList=[]
 if(not nonLin):
