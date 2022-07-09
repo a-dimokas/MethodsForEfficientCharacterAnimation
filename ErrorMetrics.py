@@ -6,6 +6,7 @@ import math
 #the blender home directory is needed for the project (eg: C:\\Users\\----\\Blender)
 blenderHomeDir = ""
 
+#model's data
 frame_last =None
 maxBones = None
 objName = None
@@ -31,6 +32,7 @@ if(not nonLin):
 else:
     modeList = ['']
 
+#for each mode (if in nonLienar approx)
 for mode in modeList:
 
     if bpy.data.actions:
@@ -123,6 +125,7 @@ for mode in modeList:
         #maximum average distance
         MaxAvgDist = sum(max_dist)/(frame_last-1)
         
+        #save output metrics to files
         outputFilepath = ''
         if(nonLin):
             outputFilepath = blenderHomeDir+"\\metrics\\"+outputName+"\\nonLinear"+str(ftol)+"="+iter+".txt"

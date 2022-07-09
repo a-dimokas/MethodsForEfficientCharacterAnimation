@@ -62,8 +62,7 @@ for pos,line in enumerate(restVerts):
         break
     
 
-#initialize weights
-
+#initialize (1.) random weights in (0,1) with coefficency
 def randomWeights():
     weightFile = open(blenderHomeDir+"\\weights\\"+fileName+"\\weights.txt")
     weights = [] 
@@ -85,6 +84,7 @@ def randomWeights():
     weightFile.close()
     return weights, vertexGroups
     
+#init (3.) correct weight initialization
 def correctWeights():
     weightFile = open(blenderHomeDir+"\\weights\\"+fileName+"\\weights.txt")
     weights = [] 
@@ -106,7 +106,7 @@ def correctWeights():
     weightFile.close()
     return weights, vertexGroups
 
-
+#init weights for init1 and vertexGroups in bones array
 weights, vertexGroups = randomWeights()
 bones = []
 for i in vertexGroups:
@@ -117,7 +117,7 @@ bones.sort()
 
 
 
-#init b matrix of verts for bone lin system
+#init b matrix of verts for bone lienar approximation
 b = []
 for frame in range(1,maxFrames):
     b.append([])
@@ -128,6 +128,7 @@ for frame in range(1,maxFrames):
         b[frame-1].append(v[1]) #viy
         b[frame-1].append(v[2]) #viz 
 
+#init A matrix for bone linear approximation
 def initAboneMats(weightList, vertexGroups):
     cc = 0 # vertex counter to get ccorresponding weights
     A = []
@@ -162,18 +163,16 @@ def initAboneMats(weightList, vertexGroups):
         cc += 1
     return A
 
-#solve linear system with least square method for joint matrices
+#linear system with least square method for approximation of joint transformation matrices
 def fitBones(weightList, vertexGroups):
     boneTransforms = []
     AboneMats = initAboneMats(weightList, vertexGroups)
     for frame in range(1,maxFrames):
         linearSquare = np.linalg.lstsq(AboneMats,b[frame-1], rcond = -1)
-#        linearSquare = lstsq(AboneMats,b[frame-1])
         boneTransforms.append(linearSquare[0])
     return boneTransforms
     
-  
-#we solve non negative lienar system with least squares for the weights fit
+#we solve non negative lienar system with least squares for the weights approximation
 def fitWeights(boneMat, vertexGroups):
     newWeights = []
     vv = 0
@@ -208,10 +207,9 @@ def fitWeights(boneMat, vertexGroups):
         newWeights.append(tmpWeights)  
         vv += 1 
         actualVV += 1 
-    
     return newWeights
     
-    
+#function to save results in file
 def printResults(weightList, boneMats, mode, vertexGroups):
     for i in range(len(weightList)):
         sumWi = sum(weightList[i])
@@ -223,7 +221,7 @@ def printResults(weightList, boneMats, mode, vertexGroups):
                 weightList[i][j] = weightList[i][j] / sumWi
     with open(blenderHomeDir+"\\approxWeights\\"+outputName+"\\"+mode+"\\approxVertWeights.txt", "w") as weightOutput:
         vv = 0
-        for line in normalWeightList:
+        for line in weightList:
             tmpString = ""
             for i in range(len(vertexGroups[vv])):
                 tmpString += str(line[i]) + ", "
@@ -239,7 +237,8 @@ def printResults(weightList, boneMats, mode, vertexGroups):
                 if(lineBreakC == 3):
                     lineBreakC = 0
                     boneOutput.write("\n")
-                    
+
+#init2 of correct bone transformation matrices        
 def correctBones():
     boneMatrs = []
     restBones = []
@@ -285,7 +284,8 @@ def getBoneData(lineNum, line):
         firstParen = line.find('(')
     lastParen = line.find(')')
     return [float(x) for x in line[firstParen+1:lastParen].split(",")]    
-           
+
+#print initial values of weights      
 def printInitialWeights(weightList, vertexGroups):
     with open(blenderHomeDir+"\\initialRandomWeights\\"+outputName+"\\Weights.txt", "w") as weightOutput:
         vv = 0
@@ -295,7 +295,8 @@ def printInitialWeights(weightList, vertexGroups):
                 tmpString += str(line[i]) + ", "
             weightOutput.write(tmpString[:-2] + "\n")
             vv += 1   
-                    
+
+#print initial values of bones               
 def printInitialBones(boneMats):
     for frame in range(1,maxFrames):
         with open(blenderHomeDir+"\\initialBones\\"+outputName+"\\frame"+str(frame)+".txt", "w") as boneOutput:
@@ -303,18 +304,18 @@ def printInitialBones(boneMats):
                 boneOutput.write(str(elem) + '\n')
                  
 #main
-
+#number of iterations to print results in each
 iters = [3,5,8,10,12]
 
 print('init1 ' + fileName)
 #init1
 mode1 = ['It3_init1','It5_init1','It8_init1','It10_init1','It12_init1']
 weights, vertexGroups = randomWeights()
-printInitialWeights(weights, vertexGroups)
+# printInitialWeights(weights, vertexGroups)
 for i in range(iters[len(iters)-1]):
     bonesMats = fitBones(weights, vertexGroups)
-    if(i==0):
-        printInitialBones(bonesMats)
+    # if(i==0):
+    #     printInitialBones(bonesMats)
     weights = fitWeights(bonesMats, vertexGroups)
     if(i+1 in iters):
         mode = mode1[iters.index(i+1)]
@@ -323,7 +324,6 @@ for i in range(iters[len(iters)-1]):
 print('init2 ' + fileName)
 #init2
 mode2 = ['It3_init2','It5_init2','It8_init2','It10_init2','It12_init2']
-weights, vertexGroups = randomWeights()
 bonesMats = correctBones()
 weights = fitWeights(bonesMats, vertexGroups)
 for i in range(iters[len(iters)-1]):

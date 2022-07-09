@@ -61,14 +61,14 @@ if bpy.data.actions:
     arma = bpy.data.objects[objName]
     boneList = arma.pose.bones
     
-    #10/5/22 (2)
+    #save rest bones in file
     restBoneFile = open(blenderHomeDir + "\\bones\\"+fileName+"\\restBones.txt", "w")
     for i in arma.data.bones:
         restBoneFile.write(i.name + ', ' + repr(i.matrix_local.inverted()) + '\n\n')
         
     restBoneFile.close()
     
-
+    #iterate through animation frames
     while current_frame<frame_last + 1:
                 
         obj = bpy.data.objects[meshName]
@@ -78,7 +78,7 @@ if bpy.data.actions:
         #open file to store vertex coords to
         vertFile = open(blenderHomeDir + "\\vertices\\"+fileName+"\\vert"+str(current_frame)+".txt", "w")
         
-        #new way (11/5/22)
+        #iterate and save vertices in localspace vert file
         for v in obj.data.vertices:
             vertFile.write(str(v.co[0]) + ', ' + str(v.co[1]) + ', ' + str(v.co[2]) + '\n')
             
@@ -96,14 +96,11 @@ if bpy.data.actions:
         #to save world space matrices and names for children and parents of the bone hierarchy
         boneDict = {}
         
-        
+        #save global bone transformation matrices
         for i in boneList:
-            
             boneDict[i.name] = arma.convert_space(pose_bone=i, matrix=i.matrix, from_space='POSE', to_space='WORLD')
             boneFile.write(i.name + ', ' + repr(boneDict[i.name]) + '\n\n')
-            
-
-            
+        
         boneFile.close()
         
         #switch back to object mode 
@@ -125,7 +122,6 @@ bpy.data.scenes["Scene"].frame_current = 0
 #    for j in i:
 #        tmpString += str(j) + ", "
 #    boneFile.write(tmpString[0:len(tmpString)-2] + "\n")
-
 #bpy.ops.object.mode_set(mode='POSE')        
 #for i in boneList:
 #    if len(i.children) > 0:
@@ -135,25 +131,22 @@ bpy.data.scenes["Scene"].frame_current = 0
 #        boneFile.write(i.name + ', ' + ", ".join(childrens) + '\n')
 #    else:
 #        boneFile.write(i.name + ', leafNode' + '\n')
-#        
 #boneFile.close()
-#        
 #bpy.ops.object.mode_set(mode='OBJECT')
 
-
-        
-
-#################################################################     
-#vertex groups are inside lola object (obj)
+ 
+#initialize objects for vertex Groups and weights extraction
 obj = bpy.data.meshes[meshName]
 curr_obj = bpy.data.objects[meshName]
 bpy.context.view_layer.objects.active = curr_obj
 bpy.ops.object.mode_set(mode='WEIGHT_PAINT')  
 
+#vlist = vertexGroups list
+#wlist = weights list
 vlist = []
 wlist = []
 
-
+#get appropriate matching indices of vertexGroups and pose Bones
 vg_indices = []
 boneNames = []
 for i in arma.data.bones:
@@ -169,9 +162,8 @@ for v in obj.vertices:
     vlist.append([])
     wlist.append([])
 
-#vg_index = 0
+#iterate each vertex group to find which vertices are affected by it
 for vg_index in vg_indices:
-#while vg_index != vg_indices:
     #find vertices that belong to vg_index vertex group 
     vs = [ v for v in obj.vertices if vg_indices.index(vg_index) in [ vg.group for vg in v.groups ] ]
     
@@ -179,16 +171,14 @@ for vg_index in vg_indices:
     for i in vs:
         vlist[i.index].append(vg_index)
         wlist[i.index].append(obj.vertices[i.index].groups[len(vlist[i.index])-1].weight)
-        
     
-    #iterate to the next vertex group    
-#    vg_index += 1
-    
+#coefficiency of weights    
 for i in range(len(wlist)):
     sumW = sum(wlist[i])
     for j in range(len(wlist[i])):
         wlist[i][j] = wlist[i][j] / sumW
     
+#save data to weight file
 weightFile = open("C:\\Users\\30693\\sxoli\\diploma\\Blender\\weights\\"+fileName+"\\weights.txt", "w+")
 for i in range(len(vlist)):
     weightFile.write(str(vlist[i]) + ", " + str(wlist[i]) + '\n')

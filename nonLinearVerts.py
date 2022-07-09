@@ -3,12 +3,14 @@ import numpy as np
 #the blender home directory is needed for the project (eg: C:\\Users\\----\\Blender)
 blenderHomeDir = ""
 
+#model's data
 outputName = None
 maxFrames = None
 maxBones = None
 objName = None
 fileName = None
 
+#verts to use (-1,-1) for all verts
 vertsDebug = [1804,1862]
 
 #get restPose vertices
@@ -45,6 +47,7 @@ for i in vertexGroups:
             bonesSort.append(j)
 bonesSort.sort()
 
+#get bones from the result of nonLinearFileFormat.py
 bones = []
 for frame in range(1,maxFrames):
     bones.append([])
@@ -61,6 +64,7 @@ for frame in range(1,maxFrames):
             break
     file.close()
 
+#get weights of the nonLinearFileFormat.py
 weights = [] 
 weightFile = open(blenderHomeDir+"\\nonLinApprox\\"+outputName+"\\approxVertWeights.txt")
 for p,l in enumerate(weightFile):
@@ -69,9 +73,8 @@ for p,l in enumerate(weightFile):
     for i in tmp:
         weights[p].append(float(i))
     
-#calculate new vertices.
+#for each frame calculate vertex approximation with the bones and weights of the nonLinearFileFormat exec
 for frame in range(1,maxFrames):
-#    verts = []
     open(blenderHomeDir+"\\nonLinApprox\\"+outputName+"\\approxVerts\\frame"+str(frame)+".txt", "w").close()
     file = open(blenderHomeDir+"\\nonLinApprox\\"+outputName+"\\approxVerts\\frame"+str(frame)+".txt", "a")
     for v in range(0,len(restVertData)):
@@ -79,7 +82,3 @@ for frame in range(1,maxFrames):
         for i in range(len(weights[v])):
             result += weights[v][i] * (bones[frame-1][bonesSort.index(vertexGroups[v][i])] @ restVertData[v])
         file.write(np.array2string(result, separator = ", ")[1:-1] +"\n")
-    #write new verts
-
-    
-    

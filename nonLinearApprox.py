@@ -7,6 +7,7 @@ from math import dist
 #the blender home directory is needed for the project (eg: C:\\Users\\----\\Blender)
 blenderHomeDir = ""
 
+#model's data
 outputName = None
 maxFrames = None
 maxBones = None
@@ -49,9 +50,8 @@ for pos,line in enumerate(restVerts):
     if(pos==vertsDebug[1]):
         break
       
-    
+#random weight init, same as the init of the linear approx system
 def randomWeights():
-    
     vertexGroupFile = open(blenderHomeDir+"\\weights\\"+fileName+"\\weights.txt")
     vertexGroups = []
     for p,l in enumerate(vertexGroupFile):
@@ -63,7 +63,6 @@ def randomWeights():
         if(p==vertsDebug[1]):
             break
     vertexGroupFile.close()
-    
     weights = [] 
     weightFile = open(blenderHomeDir+"\\initialRandomWeights\\"+outputName+"\\Weights.txt")
     for p,l in enumerate(weightFile):
@@ -74,6 +73,7 @@ def randomWeights():
     weightFile.close()
     return weights, vertexGroups
 
+#correct weights init
 def correctWeights():
     weightFile = open(blenderHomeDir+"\\weights\\"+fileName+"\\weights.txt")
     weights = [] 
@@ -95,8 +95,6 @@ def correctWeights():
     weightFile.close()
     return weights, vertexGroups
 
-
-
 #b contains the real vertex, each line is a frame, each column is a vertex index
 b = []
 for frame in range(1,maxFrames+1):
@@ -104,12 +102,11 @@ for frame in range(1,maxFrames+1):
     getVerts(realVertData, frame)
     b.append(realVertData)
     
-    
-    
+
 #initilizations
-#bounds
 weights, vertexGroups = randomWeights()
 #weights, vertexGroups = correctWeights()
+#x0 init List
 initList = []
 
 weightLength = 0
@@ -117,8 +114,8 @@ for w in weights:
     if(len(w)>1):
         weightLength += len(w)
     #add the weights to the init list
-#        for i in w:
-#            initList.append(i)
+        for i in w:
+            initList.append(i)
 
 bones = []
 for i in vertexGroups:
@@ -131,23 +128,26 @@ B = len(bones)
 N = len(restVertData)
 P = maxFrames
 
+#get initial bone transformation matrices
 def initialBones(initL, frame):
     boneMat = []
     boneFile = open(blenderHomeDir+"\\initialBones\\"+outputName+"\\frame"+str(frame)+".txt")
     for p,l in enumerate(boneFile):
         initL.append(float(l))
         
-#for i in range(1,P):
-#    initialBones(initList, i)
+for i in range(1,P):
+   initialBones(initList, i)
 
+#this fucntion is to continue from a previous output of the nonLinear approx
 def reloadPreviousInits(initL):
     inputFile = open(blenderHomeDir+"\\nonLinApprox\\"+outputName+"\\output"+reloadOutput+".txt")
     for p,l in enumerate(inputFile):
         initL.append(float(l))
         
-reloadPreviousInits(initList) 
+# if we use this we dont need to use previous initList
+# reloadPreviousInits(initList) 
 
-
+#calculate objective function of LBFGS
 def f(x):
     sumF = 0
     for frame in range(maxFrames-1):
@@ -161,6 +161,7 @@ def f(x):
             weightInd += len(vertexGroups[v])
     return sumF
 
+#calculating approximation of vertices with init List
 def vertApprox(x,p,vv,wInd):
     sum = [0,0,0]
     if(len(vertexGroups[vv])>1):
@@ -183,11 +184,11 @@ def vertApprox(x,p,vv,wInd):
         return sum
    
 
-print("from iter 30, " + fileName + str(vertsDebug) + str(ftol))
-
+print("from iter 0, " + fileName + str(vertsDebug) + str(ftol))
+#contains the result of LBFGS algorithm
 result = minimize(f, initList, options={'disp':True, 'maxfun':2000000, 'maxiter':maxiter, 'ftol':ftol}, method="L-BFGS-B", jac=None)
 
-#slsqp non linear optimization
+#output result to file
 with open(blenderHomeDir+"\\nonLinApprox\\"+outputName+"\\output"+str(ftol)+".txt", "w") as fileOutput:
     for i in result.x:
         fileOutput.write(str(i) + "\n")

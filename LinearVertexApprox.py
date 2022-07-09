@@ -1,5 +1,6 @@
 import numpy as np
 
+#model's data
 maxFrames = None
 maxBones = None
 objName = None
@@ -47,11 +48,11 @@ for i in vertexGroups:
             bonesSort.append(j)
 bonesSort.sort()
 
-for mode in ['it3_init1',#'it3_init2','it3_init3',
-'it5_init1',#'it5_init2','it5_init3',
-'it8_init1',#'it8_init2','it8_init3',
-'it10_init1',#'it10_init2','it10_init3',
-'it12_init1']:#,'it12_init2','it12_init3']:
+for mode in ['it3_init1','it3_init2','it3_init3',
+'it5_init1','it5_init2','it5_init3',
+'it8_init1','it8_init2','it8_init3',
+'it10_init1','it10_init2','it10_init3',
+'it12_init1','it12_init2','it12_init3']:
 #it() - num of iterations available
 #init(1,2,3) - 
     #1 for random weights and bones

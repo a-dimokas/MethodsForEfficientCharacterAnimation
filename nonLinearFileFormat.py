@@ -1,3 +1,4 @@
+#model's data
 outputName = None
 maxFrames = None
 maxBones = None
@@ -27,7 +28,6 @@ def getVertexGroups():
 
 vertexGroups = getVertexGroups()
     
-test = 0
 boneList = []
 for i in vertexGroups:
     for j in i:
@@ -35,7 +35,7 @@ for i in vertexGroups:
             boneList.append(j)
 boneList.sort()
 
-
+#get output file of non Lin approx
 file = open(blenderHomeDir+"\\nonLinApprox\\"+outputName+"\\output"+ftol+".txt")
 all_lines = file.readlines()
 lineCc = 0
@@ -58,7 +58,7 @@ for frame in range(maxFrames):
             bones[frame].append(float(all_lines[lineCc][:-2]))
             lineCc += 1
 
-
+#save appropiate weights and bone tranformation matrices
 with open(blenderHomeDir+"\\nonLinApprox\\"+outputName+"\\approxVertWeights.txt", "w") as weightOutput:
     vv = 0
     for line in weights:
