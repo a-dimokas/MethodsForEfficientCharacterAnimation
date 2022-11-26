@@ -1,2 +1,2 @@
-# Methods For Realistic Character Animation
-This repository covers the code for my diploma thesis at the university of Ioannina for my diploma in Computer Science and Engineering.
+# Methods For Efficient Character Animation
+This repository contains the code of my thesis at the university of Ioannina for my MSC in Computer Science and Engineering.
